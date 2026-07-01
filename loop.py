@@ -13,18 +13,3 @@ target = 10
 result = two_sum(nums, target)
 print(result)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
