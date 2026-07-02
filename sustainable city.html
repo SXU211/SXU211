@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sustainable Travel</title>
+  <style>
+    body {
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+
+    img {
+      display: block;
+      margin: auto;
+      width: 25%;
+    }
+
+    h1 {
+      color: red;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    ul {
+      color: black;
+      font-size: 20px;
+    }
+
+    .transport-link {
+      display: inline-block;
+      background-color: #04AA6D;
+      padding: 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      margin: 4px 0;
+    }
+
+    .search-btn {
+      padding: 10px 12px;
+      margin-left: 8px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1f4e79;
+      color: white;
+      cursor: pointer;
+    }
+
+    #timetableMessage {
+      color: #333;
+      margin-top: 8px;
+    }
+
+    .live-data-section {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .availability-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .transport-status {
+      padding: 12px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .status-operating {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-delayed {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .status-closed {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .timetable-container {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .departure {
+      padding: 10px;
+      border-left: 4px solid #04AA6D;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .departure-time {
+      font-weight: bold;
+      color: #1f4e79;
+      font-size: 16px;
+    }
+
+    .departure-route {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .refresh-indicator {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #999;
+      padding: 12px;
+    }
+
+    .stations-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f0f8ff;
+      border-radius: 5px;
+      border-left: 4px solid #04AA6D;
+    }
+
+    .stations-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .station-item {
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .station-icon {
+      color: #04AA6D;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    .station-item {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .station-item:hover {
+      background-color: #e3f2fd;
+      border: 2px solid #04AA6D;
+      box-shadow: 0 2px 6px rgba(4, 170, 109, 0.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #04AA6D;
+      padding-bottom: 12px;
+      margin-bottom: 15px;
+    }
+
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .close-modal:hover {
+      color: #333;
+    }
+
+    .routes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .route-badge {
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-left: 4px solid #1f4e79;
+      border-radius: 4px;
+    }
+
+    .route-name {
+      font-weight: bold;
+      color: #1f4e79;
+      margin-bottom: 4px;
+    }
+
+    .route-type {
+      display: inline-block;
+      background-color: #04AA6D;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .route-terminus {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #fffacd;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+
+    .route-terminus strong {
+      color: #1f4e79;
+    }
+
+    .route-status {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 3px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .status-green {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-yellow {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-red {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <img src="SUSTAINABLE.jpeg" alt="Sustainable travel" />
+
+  <h1>ENTER YOUR LOCATION:</h1>
+
+  <input id="locationInput" type="text" placeholder="Enter your location" />
+  <button id="findTimetableBtn" class="search-btn">Find timetable</button>
+  <p id="timetableMessage"></p>
+
+  <!-- Live Data Section -->
+  <div class="live-data-section">
+    <h2>LIVE TRANSIT DATA</h2>
+    
+    <h3>Current Availability:</h3>
+    <div class="availability-status" id="availabilityStatus">
+      <div class="loading">Loading availability...</div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Next Departures:</h3>
+    <div class="timetable-container">
+      <div class="loading" id="timetableLoading">Loading timetables...</div>
+      <div id="departuresList"></div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Available Stations:</h3>
+    <div class="stations-section">
+      <div class="loading" id="stationsLoading">Loading stations...</div>
+      <div class="stations-list" id="stationsList"></div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Motorway Information:</h3>
+    <div class="stations-section" style="background-color: #fff5f5;">
+      <div class="loading" id="motorwayLoading">Loading motorways...</div>
+      <div class="stations-list" id="motorwayList"></div>
+    </div>
+
+    <div class="refresh-indicator">
+      <span id="lastUpdated">Last updated: --:--</span> | Auto-refreshes every 30 seconds
+    </div>
+  </div>
+
+  <!-- Station Routes Modal -->
+  <div id="routesModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="stationName" style="margin: 0;">Station Name</h3>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div id="routesContainer" class="routes-list"></div>
+    </div>
+  </div>
+
+  <section>
+    <ul>HERE ARE SOME LINKS TO HELP YOU FIND YOUR TIMETABLE:</ul>
+    <ol>
+      <li><a class="transport-link" href="https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/">BUS</a></li>
+      <li><a class="transport-link" href="https://www.midlandmetro.com/">TRAM</a></li>
+      <li><a class="transport-link" href="https://www.nationalrail.co.uk/">TRAIN</a></li>
+    </ol>
+  </section>
+
+  <script>
+    const locationInput = document.getElementById('locationInput');
+    const findTimetableBtn = document.getElementById('findTimetableBtn');
+    const timetableMessage = document.getElementById('timetableMessage');
+    const availabilityStatus = document.getElementById('availabilityStatus');
+    const departuresList = document.getElementById('departuresList');
+    const timetableLoading = document.getElementById('timetableLoading');
+    const lastUpdated = document.getElementById('lastUpdated');
+
+    const timetableLinks = {
+      birmingham: 'https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/',
+      wolverhampton: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      coventry: 'https://www.westmidlandsnetwork.org/',
+      dudley: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      sandwell: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      solihull: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      'west bromwich': 'https://www.networkwestmidlands.com/travel-information/timetables/'
+    };
+
+    // Mock live availability data
+    const availabilityData = {
+      bus: { status: 'operating', delay: 0 },
+      tram: { status: 'operating', delay: 2 },
+      train: { status: 'operating', delay: 0 }
+    };
+
+    // Mock station data for different locations with routes
+    const stationData = {
+      birmingham: [
+        { name: 'Birmingham New Street', type: 'Train', routes: [
+          { name: 'Train - London Euston', terminus: 'London Euston', delay: 0, status: 'Operating' },
+          { name: 'Train - Bristol', terminus: 'Bristol Temple Meads', delay: 5, status: 'Minor Delays' },
+          { name: 'Train - Coventry', terminus: 'Coventry Station', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Birmingham Coach Station', type: 'Bus', routes: [
+          { name: 'Express 1 - National Express', terminus: 'London Victoria', delay: 0, status: 'Operating' },
+          { name: 'Express 2 - Megabus', terminus: 'Manchester Piccadilly', delay: 8, status: 'Delays' },
+          { name: 'Local 5 - Birmingham', terminus: 'Birmingham Airport', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Bullring Bus Station', type: 'Bus', routes: [
+          { name: 'Route 1 - City Centre', terminus: 'Erdington', delay: 0, status: 'Operating' },
+          { name: 'Route 2 - Airport', terminus: 'Airport Terminal', delay: 3, status: 'Minor Delays' },
+          { name: 'Route 3 - Longbridge', terminus: 'Northfield', delay: 0, status: 'Operating' },
+          { name: 'Route 5 - Outer Ring', terminus: 'Kings Heath', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Five Ways Metro', type: 'Tram', routes: [
+          { name: 'Metro Line 1 - Wolverhampton', terminus: 'Wolverhampton City Centre', delay: 2, status: 'Minor Delays' },
+          { name: 'Metro Line 2 - Dudley', terminus: 'Dudley Town Centre', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Grand Central', type: 'Multi-Modal', routes: [
+          { name: 'Train - All Routes', terminus: 'UK Wide Network', delay: 0, status: 'Operating' },
+          { name: 'Metro - Lines 1 & 2', terminus: 'Wolverhampton & Dudley', delay: 2, status: 'Minor Delays' },
+          { name: 'Bus - Routes 1-20', terminus: 'Central Birmingham', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      wolverhampton: [
+        { name: 'Wolverhampton Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 0, status: 'Operating' },
+          { name: 'Train - Manchester', terminus: 'Manchester Piccadilly', delay: 12, status: 'Severe Delays' }
+        ]},
+        { name: 'Wolverhampton Bus Station', type: 'Bus', routes: [
+          { name: 'Route 1 - City Centre', terminus: 'Wolverhampton Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 10 - Westfield', terminus: 'Westfield Shopping Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 8 - Dudley', terminus: 'Dudley Bus Station', delay: 4, status: 'Minor Delays' }
+        ]},
+        { name: 'Wolverhampton Metro', type: 'Tram', routes: [
+          { name: 'Metro Line 1 - Birmingham', terminus: 'Birmingham City Centre', delay: 2, status: 'Minor Delays' },
+          { name: 'Metro Line 2 - Dudley', terminus: 'Dudley Bus Station', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      coventry: [
+        { name: 'Coventry Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 3, status: 'Minor Delays' },
+          { name: 'Train - Leicester', terminus: 'Leicester Station', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Coventry Coach Station', type: 'Bus', routes: [
+          { name: 'Express 3 - London', terminus: 'London Victoria', delay: 0, status: 'Operating' },
+          { name: 'Express 4 - Birmingham', terminus: 'Birmingham Coach Station', delay: 6, status: 'Delays' }
+        ]},
+        { name: 'Pool Meadow', type: 'Bus', routes: [
+          { name: 'Route 7 - City Centre', terminus: 'Coventry Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 20 - Hospital', terminus: 'University Hospital', delay: 0, status: 'Operating' },
+          { name: 'Route 15 - University', terminus: 'Coventry University', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      dudley: [
+        { name: 'Dudley Bus Station', type: 'Bus', routes: [
+          { name: 'Route 8 - Town Centre', terminus: 'Dudley Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 16 - Kingswinford', terminus: 'Kingswinford', delay: 0, status: 'Operating' },
+          { name: 'Route 12 - Wolverhampton', terminus: 'Wolverhampton Bus Station', delay: 5, status: 'Delays' }
+        ]},
+        { name: 'Dudley Port Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      sandwell: [
+        { name: 'West Bromwich Central', type: 'Bus', routes: [
+          { name: 'Route 4 - West Bromwich', terminus: 'West Bromwich Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 11 - Oldbury', terminus: 'Oldbury Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 9 - Dudley', terminus: 'Dudley Bus Station', delay: 4, status: 'Minor Delays' }
+        ]},
+        { name: 'Old Hill Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      solihull: [
+        { name: 'Solihull Bus Station', type: 'Bus', routes: [
+          { name: 'Route 14 - City Centre', terminus: 'Solihull Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 17 - Airport', terminus: 'Birmingham Airport', delay: 2, status: 'Minor Delays' },
+          { name: 'Route 19 - NEC', terminus: 'NEC Birmingham', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Solihull Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 0, status: 'Operating' }
+        ]}
+      ],
+      'west bromwich': [
+        { name: 'West Bromwich Bus Station', type: 'Bus', routes: [
+          { name: 'Route 3 - Town Centre', terminus: 'West Bromwich Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 9 - Dudley', terminus: 'Dudley Bus Station', delay: 3, status: 'Minor Delays' },
+          { name: 'Route 6 - Sandwell', terminus: 'Sandwell Town Centre', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'West Bromwich Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
+      ]
+    };
+
+    // Mock motorway data for different locations
+    const motorwayData = {
+      birmingham: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'J7 (Wolverhampton)', congestion: 2, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'M42 Junction', congestion: 8, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M5', type: 'Motorway', routes: [
+          { name: 'M5 North', terminus: 'Worcestershire', congestion: 0, status: 'Free Flowing' },
+          { name: 'M5 South', terminus: 'Bristol', congestion: 5, status: 'Light Traffic' }
+        ]},
+        { name: 'M42', type: 'Motorway', routes: [
+          { name: 'M42 East', terminus: 'M1 Junction', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M42 West', terminus: 'Tamworth', congestion: 3, status: 'Light Traffic' }
+        ]}
+      ],
+      wolverhampton: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Stoke-on-Trent', congestion: 0, status: 'Free Flowing' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 8, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M54', type: 'Motorway', routes: [
+          { name: 'M54 East', terminus: 'Telford', congestion: 0, status: 'Free Flowing' },
+          { name: 'M54 West', terminus: 'Shrewsbury', congestion: 2, status: 'Light Traffic' }
+        ]}
+      ],
+      coventry: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Cannock', congestion: 4, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 7, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M69', type: 'Motorway', routes: [
+          { name: 'M69 East', terminus: 'Leicester', congestion: 2, status: 'Light Traffic' },
+          { name: 'M69 West', terminus: 'Coventry City Centre', congestion: 0, status: 'Free Flowing' }
+        ]}
+      ],
+      dudley: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 10, status: 'Heavy Traffic' }
+        ]}
+      ],
+      sandwell: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 5, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 9, status: 'Heavy Traffic' }
+        ]},
+        { name: 'M5', type: 'Motorway', routes: [
+          { name: 'M5 North', terminus: 'Worcestershire', congestion: 2, status: 'Light Traffic' },
+          { name: 'M5 South', terminus: 'Bristol', congestion: 4, status: 'Light Traffic' }
+        ]}
+      ],
+      solihull: [
+        { name: 'M42', type: 'Motorway', routes: [
+          { name: 'M42 North', terminus: 'M6 Junction', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M42 South', terminus: 'Bromsgrove', congestion: 3, status: 'Light Traffic' }
+        ]},
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Cannock', congestion: 4, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 7, status: 'Moderate Traffic' }
+        ]}
+      ],
+      'west bromwich': [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 5, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 11, status: 'Heavy Traffic' }
+        ]}
+      ]
+    };
+
+    // Mock timetable data for different locations
+    const mockTimetables = {
+      birmingham: [
+        { time: '14:12', route: 'Route 5 - City Centre', destination: 'Longbridge' },
+        { time: '14:24', route: 'Route 12 - Airport', destination: 'Airport' },
+        { time: '14:35', route: 'Metro - Wolverhampton', destination: 'Wolverhampton' },
+        { time: '14:42', route: 'Train - Coventry', destination: 'Coventry' }
+      ],
+      wolverhampton: [
+        { time: '14:15', route: 'Route 1 - City Centre', destination: 'Ring Road' },
+        { time: '14:28', route: 'Route 10 - Westfield', destination: 'Westfield' },
+        { time: '14:38', route: 'Metro - Birmingham', destination: 'Birmingham' },
+        { time: '14:45', route: 'Train - London', destination: 'London Euston' }
+      ],
+      coventry: [
+        { time: '14:18', route: 'Route 7 - City Centre', destination: 'Binley' },
+        { time: '14:30', route: 'Route 20 - Hospital', destination: 'University Hospital' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      dudley: [
+        { time: '14:20', route: 'Route 8 - Town Centre', destination: 'Himley' },
+        { time: '14:33', route: 'Route 16 - Kingswinford', destination: 'Kingswinford' },
+        { time: '14:48', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      sandwell: [
+        { time: '14:15', route: 'Route 4 - West Bromwich', destination: 'West Bromwich' },
+        { time: '14:27', route: 'Route 11 - Oldbury', destination: 'Oldbury' },
+        { time: '14:42', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      solihull: [
+        { time: '14:10', route: 'Route 14 - City Centre', destination: 'Birmingham' },
+        { time: '14:25', route: 'Route 17 - Airport', destination: 'Airport' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      'west bromwich': [
+        { time: '14:18', route: 'Route 3 - Town Centre', destination: 'Sandwell' },
+        { time: '14:32', route: 'Route 9 - Dudley', destination: 'Dudley' },
+        { time: '14:45', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ]
+    };
+
+    // Update availability display
+    function updateAvailability() {
+      availabilityStatus.innerHTML = '';
+      
+      Object.entries(availabilityData).forEach(([transport, data]) => {
+        const statusClass = data.status === 'operating' 
+          ? 'status-operating' 
+          : data.delay > 0 
+          ? 'status-delayed' 
+          : 'status-closed';
+        
+        const delayText = data.delay > 0 ? ` (+${data.delay} min delay)` : '';
+        const statusText = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+        
+        const statusEl = document.createElement('div');
+        statusEl.className = `transport-status ${statusClass}`;
+        statusEl.textContent = `${transport.toUpperCase()}\n${statusText}${delayText}`;
+        availabilityStatus.appendChild(statusEl);
+      });
+    }
+
+    // Update timetable display based on location
+    function updateTimetable(location) {
+      const locationKey = location.trim().toLowerCase();
+      const timetable = mockTimetables[locationKey] || mockTimetables.birmingham;
+      
+      timetableLoading.style.display = 'none';
+      departuresList.innerHTML = '';
+      
+      timetable.forEach(departure => {
+        const depEl = document.createElement('div');
+        depEl.className = 'departure';
+        depEl.innerHTML = `
+          <div class="departure-time">${departure.time}</div>
+          <div class="departure-route">${departure.route}</div>
+          <div style="font-size: 12px; color: #999;">→ ${departure.destination}</div>
+        `;
+        departuresList.appendChild(depEl);
+      });
+    }
+
+    // Update stations display based on location
+    function updateStations(location) {
+      const locationKey = location.trim().toLowerCase();
+      const stations = stationData[locationKey] || stationData.birmingham;
+      const stationsList = document.getElementById('stationsList');
+      const stationsLoading = document.getElementById('stationsLoading');
+      
+      stationsLoading.style.display = 'none';
+      stationsList.innerHTML = '';
+      
+      stations.forEach(station => {
+        const stationEl = createItemElement(station, 'station');
+        stationEl.addEventListener('click', () => displayRoutes(station.name, station.routes, 'station'));
+        stationsList.appendChild(stationEl);
+      });
+    }
+
+    // Update motorway display based on location
+    function updateMotorways(location) {
+      const locationKey = location.trim().toLowerCase();
+      const motorways = motorwayData[locationKey] || motorwayData.birmingham;
+      const motorwayList = document.getElementById('motorwayList');
+      const motorwayLoading = document.getElementById('motorwayLoading');
+      
+      motorwayLoading.style.display = 'none';
+      motorwayList.innerHTML = '';
+      
+      motorways.forEach(motorway => {
+        const motorwayEl = createItemElement(motorway, 'motorway');
+        motorwayEl.addEventListener('click', () => displayRoutes(motorway.name, motorway.routes, 'motorway'));
+        motorwayList.appendChild(motorwayEl);
+      });
+    }
+
+    // Create reusable item element (station or motorway)
+    function createItemElement(item, type) {
+      const el = document.createElement('div');
+      el.className = 'station-item';
+      const icon = type === 'motorway' ? '🛣️' : '📍';
+      const actionText = type === 'motorway' ? 'Click for traffic info ➜' : 'Click to see routes ➜';
+      const actionColor = type === 'motorway' ? '#d9534f' : '#04AA6D';
+      el.innerHTML = `
+        <span class="station-icon">${icon}</span>
+        <strong>${item.name}</strong>
+        <div style="font-size: 12px; color: #666; margin-top: 4px;">${item.type}</div>
+        <div style="font-size: 11px; color: ${actionColor}; margin-top: 6px; font-weight: bold;">${actionText}</div>
+      `;
+      return el;
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('routesModal').style.display = 'none';
+    }
+
+    // Generic route display function for both stations and motorways
+    function displayRoutes(title, routesList, itemType = 'station') {
+      const modal = document.getElementById('routesModal');
+      const stationName = document.getElementById('stationName');
+      const routesContainer = document.getElementById('routesContainer');
+      
+      stationName.textContent = itemType === 'motorway' ? title + ' - Traffic Information' : title;
+      routesContainer.innerHTML = '';
+      
+      routesList.forEach(route => {
+        const routeEl = document.createElement('div');
+        routeEl.className = 'route-badge';
+        
+        if (itemType === 'motorway') {
+          const congestionClass = route.congestion === 0 ? 'status-green' : route.congestion <= 5 ? 'status-yellow' : 'status-red';
+          const congestionBar = '█'.repeat(Math.ceil(route.congestion / 2)) + '░'.repeat(Math.ceil((12 - route.congestion) / 2));
+          routeEl.innerHTML = `
+            <div class="route-name">🛣️ ${route.name}</div>
+            <span class="route-type">Motorway</span>
+            <div class="route-terminus"><strong>Heads to:</strong> ${route.terminus}</div>
+            <div style="margin-top: 8px; font-size: 12px;">
+              <strong>Traffic Flow:</strong><br>
+              <span style="font-family: monospace; font-size: 11px;">${congestionBar}</span>
+            </div>
+            <div class="route-status ${congestionClass}">${route.status} (${route.congestion} minutes added time)</div>
+          `;
+        } else {
+          const statusClass = route.delay === 0 ? 'status-green' : route.delay <= 5 ? 'status-yellow' : 'status-red';
+          const delayText = route.delay === 0 ? 'No Delays' : `+${route.delay} min delay`;
+          const typeLabel = route.type || 'Transit';
+          routeEl.innerHTML = `
+            <div class="route-name">🚌 ${route.name}</div>
+            <span class="route-type">${typeLabel}</span>
+            <div class="route-terminus"><strong>Terminates at:</strong> ${route.terminus}</div>
+            <div class="route-status ${statusClass}">${route.status} (${delayText})</div>
+          `;
+        }
+        
+        routesContainer.appendChild(routeEl);
+      });
+      
+      modal.style.display = 'block';
+    }
+
+    // Update timestamp
+    function updateTimestamp() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      lastUpdated.textContent = `Last updated: ${time}`;
+    }
+
+    // Simulate live data updates (randomly update delays)
+    function simulateLiveUpdates() {
+      availabilityData.bus.delay = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0;
+      availabilityData.tram.delay = Math.random() > 0.6 ? Math.floor(Math.random() * 3) : 0;
+      availabilityData.train.delay = Math.random() > 0.8 ? Math.floor(Math.random() * 2) : 0;
+      updateAvailability();
+    }
+
+    // Consolidate all data updates
+    function updateAllData(location) {
+      updateTimetable(location);
+      updateStations(location);
+      updateMotorways(location);
+    }
+
+    // Main search function
+    function findTimetable() {
+      const location = locationInput.value.trim().toLowerCase();
+      const matchedKey = Object.keys(timetableLinks).find(key => location.includes(key));
+
+      if (matchedKey) {
+        timetableMessage.textContent = 'Showing live timetable for ' + matchedKey + '.';
+        updateAllData(matchedKey);
+      } else {
+        timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
+        departuresList.innerHTML = '';
+        timetableLoading.style.display = 'block';
+      }
+    }
+
+    // Event listeners
+    findTimetableBtn.addEventListener('click', findTimetable);
+    locationInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        findTimetable();
+      }
+    });
+
+    // Initialize on page load
+    window.addEventListener('load', function() {
+      updateAvailability();
+      updateAllData('birmingham'); // Default to Birmingham
+      updateTimestamp();
+      
+      // Auto-refresh every 30 seconds
+      setInterval(() => {
+        simulateLiveUpdates();
+        const location = locationInput.value.trim().toLowerCase();
+        if (location) {
+          updateAllData(location);
+        }
+        updateTimestamp();
+      }, 30000);
+
+      // Modal close listeners
+      document.querySelector('.close-modal').addEventListener('click', closeModal);
+      window.addEventListener('click', function(event) {
+        const modal = document.getElementById('routesModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
