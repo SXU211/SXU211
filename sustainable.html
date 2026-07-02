@@ -1,18 +1,53 @@
-<img src = "SUSTAINABLE.jpeg">
-
+<img src="SUSTAINABLE.jpeg">
 
 <h1>ENTER YOUR LOCATION:</h1>
+
+<input id="locationInput" type="text" placeholder="Enter your location" />
+<button id="findTimetableBtn" class="search-btn">Find timetable</button>
+<p id="timetableMessage"></p>
+
+
+
+
+<section> 
+    <ul>CHOOSE YOUR MODE OF TRANSPORT:</ul>
+    <ol>
+        <li><a class="transport-link" href=https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/?gad_source=1&gad_campaignid=23051018324&gbraid=0AAAAADyHk9TtcNSCIZ0nCotKP17K4XBSi&gclid=CjwKCAjwmJjSBhB-EiwAkZgxi0y2FC-IHsn8682kcEXH37sdLJjah3SujxMzp5GCHvY8dotUOUKGqRoCe8QQAvD_BwE#/>BUS</a></li> 
+        <li><a class="transport-link" href="https://www.westmidlandsmetro.com/">TRAM</a></li>
+        <li><a class="transport-link" href="https://www.thetrainline.com/train-companies/west-midlands-trains">TRAIN</a></li>
+    </ol>
+
+</section>
+
 <style>
-    img {
-  display: block;
-  margin: auto;
-  width: 25%;
+    ul{
+        color:black;
+        font-size: 20px;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+    }
+  img {
+    display: block;
+    margin: auto;
+    width: 25%;
+  }
   h1 {
-    color: black;
+    color: Black;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: 20px;
-    
-   }
+  }
+  .transport-link {
+    display: inline-block;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: #04AA6D;
+    padding: 12px;   
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    margin: 4px 0;
+  }
 
-}
+
+
 </style>
