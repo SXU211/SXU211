@@ -634,15 +634,8 @@
       stationsList.innerHTML = '';
       
       stations.forEach(station => {
-        const stationEl = document.createElement('div');
-        stationEl.className = 'station-item';
-        stationEl.innerHTML = `
-          <span class="station-icon">📍</span>
-          <strong>${station.name}</strong>
-          <div style="font-size: 12px; color: #666; margin-top: 4px;">${station.type}</div>
-          <div style="font-size: 11px; color: #04AA6D; margin-top: 6px; font-weight: bold;">Click to see routes ➜</div>
-        `;
-        stationEl.addEventListener('click', () => showStationRoutes(station));
+        const stationEl = createItemElement(station, 'station');
+        stationEl.addEventListener('click', () => displayRoutes(station.name, station.routes, 'station'));
         stationsList.appendChild(stationEl);
       });
     }
@@ -658,44 +651,26 @@
       motorwayList.innerHTML = '';
       
       motorways.forEach(motorway => {
-        const motorwayEl = document.createElement('div');
-        motorwayEl.className = 'station-item';
-        motorwayEl.innerHTML = `
-          <span class="station-icon">🛣️</span>
-          <strong>${motorway.name}</strong>
-          <div style="font-size: 12px; color: #666; margin-top: 4px;">${motorway.type}</div>
-          <div style="font-size: 11px; color: #d9534f; margin-top: 6px; font-weight: bold;">Click for traffic info ➜</div>
-        `;
-        motorwayEl.addEventListener('click', () => showMotorwayRoutes(motorway));
+        const motorwayEl = createItemElement(motorway, 'motorway');
+        motorwayEl.addEventListener('click', () => displayRoutes(motorway.name, motorway.routes, 'motorway'));
         motorwayList.appendChild(motorwayEl);
       });
     }
 
-    // Show routes for selected station in modal
-    function showStationRoutes(station) {
-      const modal = document.getElementById('routesModal');
-      const stationName = document.getElementById('stationName');
-      const routesContainer = document.getElementById('routesContainer');
-      
-      stationName.textContent = station.name;
-      routesContainer.innerHTML = '';
-      
-      station.routes.forEach(route => {
-        const statusClass = route.delay === 0 ? 'status-green' : route.delay <= 5 ? 'status-yellow' : 'status-red';
-        const delayText = route.delay === 0 ? 'No Delays' : `+${route.delay} min delay`;
-        
-        const routeEl = document.createElement('div');
-        routeEl.className = 'route-badge';
-        routeEl.innerHTML = `
-          <div class="route-name">🚌 ${route.name}</div>
-          <span class="route-type">${station.type}</span>
-          <div class="route-terminus"><strong>Terminates at:</strong> ${route.terminus}</div>
-          <div class="route-status ${statusClass}">${route.status} (${delayText})</div>
-        `;
-        routesContainer.appendChild(routeEl);
-      });
-      
-      modal.style.display = 'block';
+    // Create reusable item element (station or motorway)
+    function createItemElement(item, type) {
+      const el = document.createElement('div');
+      el.className = 'station-item';
+      const icon = type === 'motorway' ? '🛣️' : '📍';
+      const actionText = type === 'motorway' ? 'Click for traffic info ➜' : 'Click to see routes ➜';
+      const actionColor = type === 'motorway' ? '#d9534f' : '#04AA6D';
+      el.innerHTML = `
+        <span class="station-icon">${icon}</span>
+        <strong>${item.name}</strong>
+        <div style="font-size: 12px; color: #666; margin-top: 4px;">${item.type}</div>
+        <div style="font-size: 11px; color: ${actionColor}; margin-top: 6px; font-weight: bold;">${actionText}</div>
+      `;
+      return el;
     }
 
     // Close modal
@@ -703,31 +678,44 @@
       document.getElementById('routesModal').style.display = 'none';
     }
 
-    // Show motorway routes in modal
-    function showMotorwayRoutes(motorway) {
+    // Generic route display function for both stations and motorways
+    function displayRoutes(title, routesList, itemType = 'station') {
       const modal = document.getElementById('routesModal');
       const stationName = document.getElementById('stationName');
       const routesContainer = document.getElementById('routesContainer');
       
-      stationName.textContent = motorway.name + ' - Traffic Information';
+      stationName.textContent = itemType === 'motorway' ? title + ' - Traffic Information' : title;
       routesContainer.innerHTML = '';
       
-      motorway.routes.forEach(route => {
-        const congestionClass = route.congestion === 0 ? 'status-green' : route.congestion <= 5 ? 'status-yellow' : 'status-red';
-        const congestionBar = '█'.repeat(Math.ceil(route.congestion / 2)) + '░'.repeat(Math.ceil((12 - route.congestion) / 2));
-        
+      routesList.forEach(route => {
         const routeEl = document.createElement('div');
         routeEl.className = 'route-badge';
-        routeEl.innerHTML = `
-          <div class="route-name">🛣️ ${route.name}</div>
-          <span class="route-type">Motorway</span>
-          <div class="route-terminus"><strong>Heads to:</strong> ${route.terminus}</div>
-          <div style="margin-top: 8px; font-size: 12px;">
-            <strong>Traffic Flow:</strong><br>
-            <span style="font-family: monospace; font-size: 11px;">${congestionBar}</span>
-          </div>
-          <div class="route-status ${congestionClass}">${route.status} (${route.congestion} minutes added time)</div>
-        `;
+        
+        if (itemType === 'motorway') {
+          const congestionClass = route.congestion === 0 ? 'status-green' : route.congestion <= 5 ? 'status-yellow' : 'status-red';
+          const congestionBar = '█'.repeat(Math.ceil(route.congestion / 2)) + '░'.repeat(Math.ceil((12 - route.congestion) / 2));
+          routeEl.innerHTML = `
+            <div class="route-name">🛣️ ${route.name}</div>
+            <span class="route-type">Motorway</span>
+            <div class="route-terminus"><strong>Heads to:</strong> ${route.terminus}</div>
+            <div style="margin-top: 8px; font-size: 12px;">
+              <strong>Traffic Flow:</strong><br>
+              <span style="font-family: monospace; font-size: 11px;">${congestionBar}</span>
+            </div>
+            <div class="route-status ${congestionClass}">${route.status} (${route.congestion} minutes added time)</div>
+          `;
+        } else {
+          const statusClass = route.delay === 0 ? 'status-green' : route.delay <= 5 ? 'status-yellow' : 'status-red';
+          const delayText = route.delay === 0 ? 'No Delays' : `+${route.delay} min delay`;
+          const typeLabel = route.type || 'Transit';
+          routeEl.innerHTML = `
+            <div class="route-name">🚌 ${route.name}</div>
+            <span class="route-type">${typeLabel}</span>
+            <div class="route-terminus"><strong>Terminates at:</strong> ${route.terminus}</div>
+            <div class="route-status ${statusClass}">${route.status} (${delayText})</div>
+          `;
+        }
+        
         routesContainer.appendChild(routeEl);
       });
       
@@ -749,15 +737,21 @@
       updateAvailability();
     }
 
+    // Consolidate all data updates
+    function updateAllData(location) {
+      updateTimetable(location);
+      updateStations(location);
+      updateMotorways(location);
+    }
+
+    // Main search function
     function findTimetable() {
       const location = locationInput.value.trim().toLowerCase();
       const matchedKey = Object.keys(timetableLinks).find(key => location.includes(key));
 
       if (matchedKey) {
         timetableMessage.textContent = 'Showing live timetable for ' + matchedKey + '.';
-        updateTimetable(matchedKey);
-        updateStations(matchedKey);
-        updateMotorways(matchedKey);
+        updateAllData(matchedKey);
       } else {
         timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
         departuresList.innerHTML = '';
@@ -776,9 +770,7 @@
     // Initialize on page load
     window.addEventListener('load', function() {
       updateAvailability();
-      updateTimetable('birmingham'); // Default to Birmingham
-      updateStations('birmingham'); // Default to Birmingham
-      updateMotorways('birmingham'); // Default to Birmingham
+      updateAllData('birmingham'); // Default to Birmingham
       updateTimestamp();
       
       // Auto-refresh every 30 seconds
@@ -786,7 +778,7 @@
         simulateLiveUpdates();
         const location = locationInput.value.trim().toLowerCase();
         if (location) {
-          updateTimetable(location);
+          updateAllData(location);
         }
         updateTimestamp();
       }, 30000);
