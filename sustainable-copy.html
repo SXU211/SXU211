@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sustainable Travel</title>
+  <style>
+    body {
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+
+    img {
+      display: block;
+      margin: auto;
+      width: 25%;
+    }
+
+    h1 {
+      color: red;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    ul {
+      color: black;
+      font-size: 20px;
+    }
+
+    .transport-link {
+      display: inline-block;
+      background-color: #04AA6D;
+      padding: 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      margin: 4px 0;
+    }
+
+    .search-btn {
+      padding: 10px 12px;
+      margin-left: 8px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1f4e79;
+      color: white;
+      cursor: pointer;
+    }
+
+    #timetableMessage {
+      color: #333;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <img src="SUSTAINABLE.jpeg" alt="Sustainable travel" />
+
+  <h1>ENTER YOUR LOCATION:</h1>
+
+  <input id="locationInput" type="text" placeholder="Enter your location" />
+  <button id="findTimetableBtn" class="search-btn">Find timetable</button>
+  <p id="timetableMessage"></p>
+
+  <section>
+    <ul>CHOOSE YOUR MODE OF TRANSPORT:</ul>
+    <ol>
+      <li><a class="transport-link" href="https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/">BUS</a></li>
+      <li><a class="transport-link" href="https://www.google.com/">TRAM</a></li>
+      <li><a class="transport-link" href="https://www.google.com/">TRAIN</a></li>
+    </ol>
+  </section>
+
+  <script>
+    const locationInput = document.getElementById('locationInput');
+    const findTimetableBtn = document.getElementById('findTimetableBtn');
+    const timetableMessage = document.getElementById('timetableMessage');
+
+    const timetableLinks = {
+      birmingham: 'https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/',
+      wolverhampton: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      coventry: 'https://www.westmidlandsnetwork.org/',
+      dudley: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      sandwell: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      solihull: 'https://www.networkwestmidlands.com/travel-information/timetables/',
+      'west bromwich': 'https://www.networkwestmidlands.com/travel-information/timetables/'
+    };
+
+    function findTimetable() {
+      const location = locationInput.value.trim().toLowerCase();
+      const matchedKey = Object.keys(timetableLinks).find(key => location.includes(key));
+
+      if (matchedKey) {
+        timetableMessage.textContent = 'Taking you to the timetable for ' + matchedKey + '.';
+        window.location.href = timetableLinks[matchedKey];
+      } else {
+        timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
+      }
+    }
+
+    findTimetableBtn.addEventListener('click', findTimetable);
+    locationInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        findTimetable();
+      }
+    });
+  </script>
+</body>
+</html>
