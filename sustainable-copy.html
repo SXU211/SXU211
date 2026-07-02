@@ -53,6 +53,82 @@
       color: #333;
       margin-top: 8px;
     }
+
+    .live-data-section {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .availability-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .transport-status {
+      padding: 12px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .status-operating {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-delayed {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .status-closed {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .timetable-container {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .departure {
+      padding: 10px;
+      border-left: 4px solid #04AA6D;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .departure-time {
+      font-weight: bold;
+      color: #1f4e79;
+      font-size: 16px;
+    }
+
+    .departure-route {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .refresh-indicator {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #999;
+      padding: 12px;
+    }
   </style>
 </head>
 <body>
@@ -64,12 +140,32 @@
   <button id="findTimetableBtn" class="search-btn">Find timetable</button>
   <p id="timetableMessage"></p>
 
+  <!-- Live Data Section -->
+  <div class="live-data-section">
+    <h2>LIVE TRANSIT DATA</h2>
+    
+    <h3>Current Availability:</h3>
+    <div class="availability-status" id="availabilityStatus">
+      <div class="loading">Loading availability...</div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Next Departures:</h3>
+    <div class="timetable-container">
+      <div class="loading" id="timetableLoading">Loading timetables...</div>
+      <div id="departuresList"></div>
+    </div>
+
+    <div class="refresh-indicator">
+      <span id="lastUpdated">Last updated: --:--</span> | Auto-refreshes every 30 seconds
+    </div>
+  </div>
+
   <section>
     <ul>CHOOSE YOUR MODE OF TRANSPORT:</ul>
     <ol>
       <li><a class="transport-link" href="https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/">BUS</a></li>
-      <li><a class="transport-link" href="https://www.google.com/">TRAM</a></li>
-      <li><a class="transport-link" href="https://www.google.com/">TRAIN</a></li>
+      <li><a class="transport-link" href="https://www.midlandmetro.com/">TRAM</a></li>
+      <li><a class="transport-link" href="https://www.nationalrail.co.uk/">TRAIN</a></li>
     </ol>
   </section>
 
@@ -77,6 +173,10 @@
     const locationInput = document.getElementById('locationInput');
     const findTimetableBtn = document.getElementById('findTimetableBtn');
     const timetableMessage = document.getElementById('timetableMessage');
+    const availabilityStatus = document.getElementById('availabilityStatus');
+    const departuresList = document.getElementById('departuresList');
+    const timetableLoading = document.getElementById('timetableLoading');
+    const lastUpdated = document.getElementById('lastUpdated');
 
     const timetableLinks = {
       birmingham: 'https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/',
@@ -85,26 +185,150 @@
       dudley: 'https://www.networkwestmidlands.com/travel-information/timetables/',
       sandwell: 'https://www.networkwestmidlands.com/travel-information/timetables/',
       solihull: 'https://www.networkwestmidlands.com/travel-information/timetables/',
-      'West Bromwich': 'https://www.networkwestmidlands.com/travel-information/timetables/'
+      'west bromwich': 'https://www.networkwestmidlands.com/travel-information/timetables/'
     };
+
+    // Mock live availability data
+    const availabilityData = {
+      bus: { status: 'operating', delay: 0 },
+      tram: { status: 'operating', delay: 2 },
+      train: { status: 'operating', delay: 0 }
+    };
+
+    // Mock timetable data for different locations
+    const mockTimetables = {
+      birmingham: [
+        { time: '14:12', route: 'Route 5 - City Centre', destination: 'Longbridge' },
+        { time: '14:24', route: 'Route 12 - Airport', destination: 'Airport' },
+        { time: '14:35', route: 'Metro - Wolverhampton', destination: 'Wolverhampton' },
+        { time: '14:42', route: 'Train - Coventry', destination: 'Coventry' }
+      ],
+      wolverhampton: [
+        { time: '14:15', route: 'Route 1 - City Centre', destination: 'Ring Road' },
+        { time: '14:28', route: 'Route 10 - Westfield', destination: 'Westfield' },
+        { time: '14:38', route: 'Metro - Birmingham', destination: 'Birmingham' },
+        { time: '14:45', route: 'Train - London', destination: 'London Euston' }
+      ],
+      coventry: [
+        { time: '14:18', route: 'Route 7 - City Centre', destination: 'Binley' },
+        { time: '14:30', route: 'Route 20 - Hospital', destination: 'University Hospital' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      dudley: [
+        { time: '14:20', route: 'Route 8 - Town Centre', destination: 'Himley' },
+        { time: '14:33', route: 'Route 16 - Kingswinford', destination: 'Kingswinford' },
+        { time: '14:48', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      sandwell: [
+        { time: '14:15', route: 'Route 4 - West Bromwich', destination: 'West Bromwich' },
+        { time: '14:27', route: 'Route 11 - Oldbury', destination: 'Oldbury' },
+        { time: '14:42', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      solihull: [
+        { time: '14:10', route: 'Route 14 - City Centre', destination: 'Birmingham' },
+        { time: '14:25', route: 'Route 17 - Airport', destination: 'Airport' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      'west bromwich': [
+        { time: '14:18', route: 'Route 3 - Town Centre', destination: 'Sandwell' },
+        { time: '14:32', route: 'Route 9 - Dudley', destination: 'Dudley' },
+        { time: '14:45', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ]
+    };
+
+    // Update availability display
+    function updateAvailability() {
+      availabilityStatus.innerHTML = '';
+      
+      Object.entries(availabilityData).forEach(([transport, data]) => {
+        const statusClass = data.status === 'operating' 
+          ? 'status-operating' 
+          : data.delay > 0 
+          ? 'status-delayed' 
+          : 'status-closed';
+        
+        const delayText = data.delay > 0 ? ` (+${data.delay} min delay)` : '';
+        const statusText = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+        
+        const statusEl = document.createElement('div');
+        statusEl.className = `transport-status ${statusClass}`;
+        statusEl.textContent = `${transport.toUpperCase()}\n${statusText}${delayText}`;
+        availabilityStatus.appendChild(statusEl);
+      });
+    }
+
+    // Update timetable display based on location
+    function updateTimetable(location) {
+      const locationKey = location.trim().toLowerCase();
+      const timetable = mockTimetables[locationKey] || mockTimetables.birmingham;
+      
+      timetableLoading.style.display = 'none';
+      departuresList.innerHTML = '';
+      
+      timetable.forEach(departure => {
+        const depEl = document.createElement('div');
+        depEl.className = 'departure';
+        depEl.innerHTML = `
+          <div class="departure-time">${departure.time}</div>
+          <div class="departure-route">${departure.route}</div>
+          <div style="font-size: 12px; color: #999;">→ ${departure.destination}</div>
+        `;
+        departuresList.appendChild(depEl);
+      });
+    }
+
+    // Update timestamp
+    function updateTimestamp() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      lastUpdated.textContent = `Last updated: ${time}`;
+    }
+
+    // Simulate live data updates (randomly update delays)
+    function simulateLiveUpdates() {
+      availabilityData.bus.delay = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0;
+      availabilityData.tram.delay = Math.random() > 0.6 ? Math.floor(Math.random() * 3) : 0;
+      availabilityData.train.delay = Math.random() > 0.8 ? Math.floor(Math.random() * 2) : 0;
+      updateAvailability();
+    }
 
     function findTimetable() {
       const location = locationInput.value.trim().toLowerCase();
       const matchedKey = Object.keys(timetableLinks).find(key => location.includes(key));
 
       if (matchedKey) {
-        timetableMessage.textContent = 'Taking you to the timetable for ' + matchedKey + '.';
-        window.location.href = timetableLinks[matchedKey];
+        timetableMessage.textContent = 'Showing live timetable for ' + matchedKey + '.';
+        updateTimetable(matchedKey);
       } else {
         timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
+        departuresList.innerHTML = '';
+        timetableLoading.style.display = 'block';
       }
     }
 
+    // Event listeners
     findTimetableBtn.addEventListener('click', findTimetable);
     locationInput.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') {
         findTimetable();
       }
+    });
+
+    // Initialize on page load
+    window.addEventListener('load', function() {
+      updateAvailability();
+      updateTimetable('birmingham'); // Default to Birmingham
+      updateTimestamp();
+      
+      // Auto-refresh every 30 seconds
+      setInterval(() => {
+        simulateLiveUpdates();
+        const location = locationInput.value.trim().toLowerCase();
+        if (location) {
+          updateTimetable(location);
+        }
+        updateTimestamp();
+      }, 30000);
     });
   </script>
 </body>
