@@ -307,6 +307,12 @@
       <div class="stations-list" id="stationsList"></div>
     </div>
 
+    <h3 style="margin-top: 20px;">Motorway Information:</h3>
+    <div class="stations-section" style="background-color: #fff5f5;">
+      <div class="loading" id="motorwayLoading">Loading motorways...</div>
+      <div class="stations-list" id="motorwayList"></div>
+    </div>
+
     <div class="refresh-indicator">
       <span id="lastUpdated">Last updated: --:--</span> | Auto-refreshes every 30 seconds
     </div>
@@ -356,47 +362,6 @@
       bus: { status: 'operating', delay: 0 },
       tram: { status: 'operating', delay: 2 },
       train: { status: 'operating', delay: 0 }
-    };
-
-    // Mock timetable data for different locations
-    const mockTimetables = {
-      birmingham: [
-        { time: '14:12', route: 'Route 5 - City Centre', destination: 'Longbridge' },
-        { time: '14:24', route: 'Route 12 - Airport', destination: 'Airport' },
-        { time: '14:35', route: 'Metro - Wolverhampton', destination: 'Wolverhampton' },
-        { time: '14:42', route: 'Train - Coventry', destination: 'Coventry' }
-      ],
-      wolverhampton: [
-        { time: '14:15', route: 'Route 1 - City Centre', destination: 'Ring Road' },
-        { time: '14:28', route: 'Route 10 - Westfield', destination: 'Westfield' },
-        { time: '14:38', route: 'Metro - Birmingham', destination: 'Birmingham' },
-        { time: '14:45', route: 'Train - London', destination: 'London Euston' }
-      ],
-      coventry: [
-        { time: '14:18', route: 'Route 7 - City Centre', destination: 'Binley' },
-        { time: '14:30', route: 'Route 20 - Hospital', destination: 'University Hospital' },
-        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
-      ],
-      dudley: [
-        { time: '14:20', route: 'Route 8 - Town Centre', destination: 'Himley' },
-        { time: '14:33', route: 'Route 16 - Kingswinford', destination: 'Kingswinford' },
-        { time: '14:48', route: 'Train - Birmingham', destination: 'Birmingham' }
-      ],
-      sandwell: [
-        { time: '14:15', route: 'Route 4 - West Bromwich', destination: 'West Bromwich' },
-        { time: '14:27', route: 'Route 11 - Oldbury', destination: 'Oldbury' },
-        { time: '14:42', route: 'Train - Birmingham', destination: 'Birmingham' }
-      ],
-      solihull: [
-        { time: '14:10', route: 'Route 14 - City Centre', destination: 'Birmingham' },
-        { time: '14:25', route: 'Route 17 - Airport', destination: 'Airport' },
-        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
-      ],
-      'west bromwich': [
-        { time: '14:18', route: 'Route 3 - Town Centre', destination: 'Sandwell' },
-        { time: '14:32', route: 'Route 9 - Dudley', destination: 'Dudley' },
-        { time: '14:45', route: 'Train - Birmingham', destination: 'Birmingham' }
-      ]
     };
 
     // Mock station data for different locations with routes
@@ -506,6 +471,117 @@
       ]
     };
 
+    // Mock motorway data for different locations
+    const motorwayData = {
+      birmingham: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'J7 (Wolverhampton)', congestion: 2, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'M42 Junction', congestion: 8, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M5', type: 'Motorway', routes: [
+          { name: 'M5 North', terminus: 'Worcestershire', congestion: 0, status: 'Free Flowing' },
+          { name: 'M5 South', terminus: 'Bristol', congestion: 5, status: 'Light Traffic' }
+        ]},
+        { name: 'M42', type: 'Motorway', routes: [
+          { name: 'M42 East', terminus: 'M1 Junction', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M42 West', terminus: 'Tamworth', congestion: 3, status: 'Light Traffic' }
+        ]}
+      ],
+      wolverhampton: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Stoke-on-Trent', congestion: 0, status: 'Free Flowing' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 8, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M54', type: 'Motorway', routes: [
+          { name: 'M54 East', terminus: 'Telford', congestion: 0, status: 'Free Flowing' },
+          { name: 'M54 West', terminus: 'Shrewsbury', congestion: 2, status: 'Light Traffic' }
+        ]}
+      ],
+      coventry: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Cannock', congestion: 4, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 7, status: 'Moderate Traffic' }
+        ]},
+        { name: 'M69', type: 'Motorway', routes: [
+          { name: 'M69 East', terminus: 'Leicester', congestion: 2, status: 'Light Traffic' },
+          { name: 'M69 West', terminus: 'Coventry City Centre', congestion: 0, status: 'Free Flowing' }
+        ]}
+      ],
+      dudley: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 10, status: 'Heavy Traffic' }
+        ]}
+      ],
+      sandwell: [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 5, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 9, status: 'Heavy Traffic' }
+        ]},
+        { name: 'M5', type: 'Motorway', routes: [
+          { name: 'M5 North', terminus: 'Worcestershire', congestion: 2, status: 'Light Traffic' },
+          { name: 'M5 South', terminus: 'Bristol', congestion: 4, status: 'Light Traffic' }
+        ]}
+      ],
+      solihull: [
+        { name: 'M42', type: 'Motorway', routes: [
+          { name: 'M42 North', terminus: 'M6 Junction', congestion: 6, status: 'Moderate Traffic' },
+          { name: 'M42 South', terminus: 'Bromsgrove', congestion: 3, status: 'Light Traffic' }
+        ]},
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Cannock', congestion: 4, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 7, status: 'Moderate Traffic' }
+        ]}
+      ],
+      'west bromwich': [
+        { name: 'M6', type: 'Motorway', routes: [
+          { name: 'M6 North', terminus: 'Wolverhampton', congestion: 5, status: 'Light Traffic' },
+          { name: 'M6 South', terminus: 'Birmingham', congestion: 11, status: 'Heavy Traffic' }
+        ]}
+      ]
+    };
+
+    // Mock timetable data for different locations
+    const mockTimetables = {
+      birmingham: [
+        { time: '14:12', route: 'Route 5 - City Centre', destination: 'Longbridge' },
+        { time: '14:24', route: 'Route 12 - Airport', destination: 'Airport' },
+        { time: '14:35', route: 'Metro - Wolverhampton', destination: 'Wolverhampton' },
+        { time: '14:42', route: 'Train - Coventry', destination: 'Coventry' }
+      ],
+      wolverhampton: [
+        { time: '14:15', route: 'Route 1 - City Centre', destination: 'Ring Road' },
+        { time: '14:28', route: 'Route 10 - Westfield', destination: 'Westfield' },
+        { time: '14:38', route: 'Metro - Birmingham', destination: 'Birmingham' },
+        { time: '14:45', route: 'Train - London', destination: 'London Euston' }
+      ],
+      coventry: [
+        { time: '14:18', route: 'Route 7 - City Centre', destination: 'Binley' },
+        { time: '14:30', route: 'Route 20 - Hospital', destination: 'University Hospital' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      dudley: [
+        { time: '14:20', route: 'Route 8 - Town Centre', destination: 'Himley' },
+        { time: '14:33', route: 'Route 16 - Kingswinford', destination: 'Kingswinford' },
+        { time: '14:48', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      sandwell: [
+        { time: '14:15', route: 'Route 4 - West Bromwich', destination: 'West Bromwich' },
+        { time: '14:27', route: 'Route 11 - Oldbury', destination: 'Oldbury' },
+        { time: '14:42', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      solihull: [
+        { time: '14:10', route: 'Route 14 - City Centre', destination: 'Birmingham' },
+        { time: '14:25', route: 'Route 17 - Airport', destination: 'Airport' },
+        { time: '14:40', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ],
+      'west bromwich': [
+        { time: '14:18', route: 'Route 3 - Town Centre', destination: 'Sandwell' },
+        { time: '14:32', route: 'Route 9 - Dudley', destination: 'Dudley' },
+        { time: '14:45', route: 'Train - Birmingham', destination: 'Birmingham' }
+      ]
+    };
+
     // Update availability display
     function updateAvailability() {
       availabilityStatus.innerHTML = '';
@@ -571,6 +647,30 @@
       });
     }
 
+    // Update motorway display based on location
+    function updateMotorways(location) {
+      const locationKey = location.trim().toLowerCase();
+      const motorways = motorwayData[locationKey] || motorwayData.birmingham;
+      const motorwayList = document.getElementById('motorwayList');
+      const motorwayLoading = document.getElementById('motorwayLoading');
+      
+      motorwayLoading.style.display = 'none';
+      motorwayList.innerHTML = '';
+      
+      motorways.forEach(motorway => {
+        const motorwayEl = document.createElement('div');
+        motorwayEl.className = 'station-item';
+        motorwayEl.innerHTML = `
+          <span class="station-icon">🛣️</span>
+          <strong>${motorway.name}</strong>
+          <div style="font-size: 12px; color: #666; margin-top: 4px;">${motorway.type}</div>
+          <div style="font-size: 11px; color: #d9534f; margin-top: 6px; font-weight: bold;">Click for traffic info ➜</div>
+        `;
+        motorwayEl.addEventListener('click', () => showMotorwayRoutes(motorway));
+        motorwayList.appendChild(motorwayEl);
+      });
+    }
+
     // Show routes for selected station in modal
     function showStationRoutes(station) {
       const modal = document.getElementById('routesModal');
@@ -603,6 +703,37 @@
       document.getElementById('routesModal').style.display = 'none';
     }
 
+    // Show motorway routes in modal
+    function showMotorwayRoutes(motorway) {
+      const modal = document.getElementById('routesModal');
+      const stationName = document.getElementById('stationName');
+      const routesContainer = document.getElementById('routesContainer');
+      
+      stationName.textContent = motorway.name + ' - Traffic Information';
+      routesContainer.innerHTML = '';
+      
+      motorway.routes.forEach(route => {
+        const congestionClass = route.congestion === 0 ? 'status-green' : route.congestion <= 5 ? 'status-yellow' : 'status-red';
+        const congestionBar = '█'.repeat(Math.ceil(route.congestion / 2)) + '░'.repeat(Math.ceil((12 - route.congestion) / 2));
+        
+        const routeEl = document.createElement('div');
+        routeEl.className = 'route-badge';
+        routeEl.innerHTML = `
+          <div class="route-name">🛣️ ${route.name}</div>
+          <span class="route-type">Motorway</span>
+          <div class="route-terminus"><strong>Heads to:</strong> ${route.terminus}</div>
+          <div style="margin-top: 8px; font-size: 12px;">
+            <strong>Traffic Flow:</strong><br>
+            <span style="font-family: monospace; font-size: 11px;">${congestionBar}</span>
+          </div>
+          <div class="route-status ${congestionClass}">${route.status} (${route.congestion} minutes added time)</div>
+        `;
+        routesContainer.appendChild(routeEl);
+      });
+      
+      modal.style.display = 'block';
+    }
+
     // Update timestamp
     function updateTimestamp() {
       const now = new Date();
@@ -626,6 +757,7 @@
         timetableMessage.textContent = 'Showing live timetable for ' + matchedKey + '.';
         updateTimetable(matchedKey);
         updateStations(matchedKey);
+        updateMotorways(matchedKey);
       } else {
         timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
         departuresList.innerHTML = '';
@@ -646,6 +778,7 @@
       updateAvailability();
       updateTimetable('birmingham'); // Default to Birmingham
       updateStations('birmingham'); // Default to Birmingham
+      updateMotorways('birmingham'); // Default to Birmingham
       updateTimestamp();
       
       // Auto-refresh every 30 seconds
