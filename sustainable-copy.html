@@ -129,6 +129,117 @@
       color: #999;
       padding: 12px;
     }
+
+    .stations-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f0f8ff;
+      border-radius: 5px;
+      border-left: 4px solid #04AA6D;
+    }
+
+    .stations-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .station-item {
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .station-icon {
+      color: #04AA6D;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    .station-item {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .station-item:hover {
+      background-color: #e3f2fd;
+      border: 2px solid #04AA6D;
+      box-shadow: 0 2px 6px rgba(4, 170, 109, 0.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #04AA6D;
+      padding-bottom: 12px;
+      margin-bottom: 15px;
+    }
+
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .close-modal:hover {
+      color: #333;
+    }
+
+    .routes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .route-badge {
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-left: 4px solid #1f4e79;
+      border-radius: 4px;
+    }
+
+    .route-name {
+      font-weight: bold;
+      color: #1f4e79;
+      margin-bottom: 4px;
+    }
+
+    .route-type {
+      display: inline-block;
+      background-color: #04AA6D;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -155,13 +266,30 @@
       <div id="departuresList"></div>
     </div>
 
+    <h3 style="margin-top: 20px;">Available Stations:</h3>
+    <div class="stations-section">
+      <div class="loading" id="stationsLoading">Loading stations...</div>
+      <div class="stations-list" id="stationsList"></div>
+    </div>
+
     <div class="refresh-indicator">
       <span id="lastUpdated">Last updated: --:--</span> | Auto-refreshes every 30 seconds
     </div>
   </div>
 
+  <!-- Station Routes Modal -->
+  <div id="routesModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="stationName" style="margin: 0;">Station Name</h3>
+        <span class="close-modal">&times;</span>
+      </div>
+      <div id="routesContainer" class="routes-list"></div>
+    </div>
+  </div>
+
   <section>
-    <ul>CHOOSE YOUR MODE OF TRANSPORT:</ul>
+    <ul>HERE ARE SOME LINKS TO HELP YOU FIND YOUR TIMETABLE:</ul>
     <ol>
       <li><a class="transport-link" href="https://www.tfwm.org.uk/plan-your-journey/find-a-timetable/">BUS</a></li>
       <li><a class="transport-link" href="https://www.midlandmetro.com/">TRAM</a></li>
@@ -236,6 +364,43 @@
       ]
     };
 
+    // Mock station data for different locations with routes
+    const stationData = {
+      birmingham: [
+        { name: 'Birmingham New Street', type: 'Train', routes: ['Train - London Euston', 'Train - Bristol', 'Train - Coventry'] },
+        { name: 'Birmingham Coach Station', type: 'Bus', routes: ['Express 1 - National Express', 'Express 2 - Megabus', 'Local 5 - Birmingham'] },
+        { name: 'Bullring Bus Station', type: 'Bus', routes: ['Route 1 - City Centre', 'Route 2 - Airport', 'Route 3 - Longbridge', 'Route 5 - Outer Ring'] },
+        { name: 'Five Ways Metro', type: 'Tram', routes: ['Metro Line 1 - Wolverhampton', 'Metro Line 2 - Dudley'] },
+        { name: 'Grand Central', type: 'Multi-Modal', routes: ['Train - All Routes', 'Metro - Lines 1 & 2', 'Bus - Routes 1-20'] }
+      ],
+      wolverhampton: [
+        { name: 'Wolverhampton Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London', 'Train - Manchester'] },
+        { name: 'Wolverhampton Bus Station', type: 'Bus', routes: ['Route 1 - City Centre', 'Route 10 - Westfield', 'Route 8 - Dudley'] },
+        { name: 'Wolverhampton Metro', type: 'Tram', routes: ['Metro Line 1 - Birmingham', 'Metro Line 2 - Dudley'] }
+      ],
+      coventry: [
+        { name: 'Coventry Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London', 'Train - Leicester'] },
+        { name: 'Coventry Coach Station', type: 'Bus', routes: ['Express 3 - London', 'Express 4 - Birmingham'] },
+        { name: 'Pool Meadow', type: 'Bus', routes: ['Route 7 - City Centre', 'Route 20 - Hospital', 'Route 15 - University'] }
+      ],
+      dudley: [
+        { name: 'Dudley Bus Station', type: 'Bus', routes: ['Route 8 - Town Centre', 'Route 16 - Kingswinford', 'Route 12 - Wolverhampton'] },
+        { name: 'Dudley Port Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+      ],
+      sandwell: [
+        { name: 'West Bromwich Central', type: 'Bus', routes: ['Route 4 - West Bromwich', 'Route 11 - Oldbury', 'Route 9 - Dudley'] },
+        { name: 'Old Hill Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+      ],
+      solihull: [
+        { name: 'Solihull Bus Station', type: 'Bus', routes: ['Route 14 - City Centre', 'Route 17 - Airport', 'Route 19 - NEC'] },
+        { name: 'Solihull Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London'] }
+      ],
+      'west bromwich': [
+        { name: 'West Bromwich Bus Station', type: 'Bus', routes: ['Route 3 - Town Centre', 'Route 9 - Dudley', 'Route 6 - Sandwell'] },
+        { name: 'West Bromwich Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+      ]
+    };
+
     // Update availability display
     function updateAvailability() {
       availabilityStatus.innerHTML = '';
@@ -277,6 +442,57 @@
       });
     }
 
+    // Update stations display based on location
+    function updateStations(location) {
+      const locationKey = location.trim().toLowerCase();
+      const stations = stationData[locationKey] || stationData.birmingham;
+      const stationsList = document.getElementById('stationsList');
+      const stationsLoading = document.getElementById('stationsLoading');
+      
+      stationsLoading.style.display = 'none';
+      stationsList.innerHTML = '';
+      
+      stations.forEach(station => {
+        const stationEl = document.createElement('div');
+        stationEl.className = 'station-item';
+        stationEl.innerHTML = `
+          <span class="station-icon">📍</span>
+          <strong>${station.name}</strong>
+          <div style="font-size: 12px; color: #666; margin-top: 4px;">${station.type}</div>
+          <div style="font-size: 11px; color: #04AA6D; margin-top: 6px; font-weight: bold;">Click to see routes ➜</div>
+        `;
+        stationEl.addEventListener('click', () => showStationRoutes(station));
+        stationsList.appendChild(stationEl);
+      });
+    }
+
+    // Show routes for selected station in modal
+    function showStationRoutes(station) {
+      const modal = document.getElementById('routesModal');
+      const stationName = document.getElementById('stationName');
+      const routesContainer = document.getElementById('routesContainer');
+      
+      stationName.textContent = station.name;
+      routesContainer.innerHTML = '';
+      
+      station.routes.forEach(route => {
+        const routeEl = document.createElement('div');
+        routeEl.className = 'route-badge';
+        routeEl.innerHTML = `
+          <div class="route-name">🚌 ${route}</div>
+          <span class="route-type">${station.type}</span>
+        `;
+        routesContainer.appendChild(routeEl);
+      });
+      
+      modal.style.display = 'block';
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('routesModal').style.display = 'none';
+    }
+
     // Update timestamp
     function updateTimestamp() {
       const now = new Date();
@@ -299,6 +515,7 @@
       if (matchedKey) {
         timetableMessage.textContent = 'Showing live timetable for ' + matchedKey + '.';
         updateTimetable(matchedKey);
+        updateStations(matchedKey);
       } else {
         timetableMessage.textContent = 'Try a location such as Birmingham, Wolverhampton, Coventry, Dudley, Sandwell, Solihull, or West Bromwich.';
         departuresList.innerHTML = '';
@@ -318,6 +535,7 @@
     window.addEventListener('load', function() {
       updateAvailability();
       updateTimetable('birmingham'); // Default to Birmingham
+      updateStations('birmingham'); // Default to Birmingham
       updateTimestamp();
       
       // Auto-refresh every 30 seconds
@@ -329,6 +547,15 @@
         }
         updateTimestamp();
       }, 30000);
+
+      // Modal close listeners
+      document.querySelector('.close-modal').addEventListener('click', closeModal);
+      window.addEventListener('click', function(event) {
+        const modal = document.getElementById('routesModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
     });
   </script>
 </body>
