@@ -240,6 +240,41 @@
       font-size: 12px;
       margin-top: 4px;
     }
+
+    .route-terminus {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #fffacd;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+
+    .route-terminus strong {
+      color: #1f4e79;
+    }
+
+    .route-status {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 3px;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .status-green {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-yellow {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-red {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
@@ -367,37 +402,107 @@
     // Mock station data for different locations with routes
     const stationData = {
       birmingham: [
-        { name: 'Birmingham New Street', type: 'Train', routes: ['Train - London Euston', 'Train - Bristol', 'Train - Coventry'] },
-        { name: 'Birmingham Coach Station', type: 'Bus', routes: ['Express 1 - National Express', 'Express 2 - Megabus', 'Local 5 - Birmingham'] },
-        { name: 'Bullring Bus Station', type: 'Bus', routes: ['Route 1 - City Centre', 'Route 2 - Airport', 'Route 3 - Longbridge', 'Route 5 - Outer Ring'] },
-        { name: 'Five Ways Metro', type: 'Tram', routes: ['Metro Line 1 - Wolverhampton', 'Metro Line 2 - Dudley'] },
-        { name: 'Grand Central', type: 'Multi-Modal', routes: ['Train - All Routes', 'Metro - Lines 1 & 2', 'Bus - Routes 1-20'] }
+        { name: 'Birmingham New Street', type: 'Train', routes: [
+          { name: 'Train - London Euston', terminus: 'London Euston', delay: 0, status: 'Operating' },
+          { name: 'Train - Bristol', terminus: 'Bristol Temple Meads', delay: 5, status: 'Minor Delays' },
+          { name: 'Train - Coventry', terminus: 'Coventry Station', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Birmingham Coach Station', type: 'Bus', routes: [
+          { name: 'Express 1 - National Express', terminus: 'London Victoria', delay: 0, status: 'Operating' },
+          { name: 'Express 2 - Megabus', terminus: 'Manchester Piccadilly', delay: 8, status: 'Delays' },
+          { name: 'Local 5 - Birmingham', terminus: 'Birmingham Airport', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Bullring Bus Station', type: 'Bus', routes: [
+          { name: 'Route 1 - City Centre', terminus: 'Erdington', delay: 0, status: 'Operating' },
+          { name: 'Route 2 - Airport', terminus: 'Airport Terminal', delay: 3, status: 'Minor Delays' },
+          { name: 'Route 3 - Longbridge', terminus: 'Northfield', delay: 0, status: 'Operating' },
+          { name: 'Route 5 - Outer Ring', terminus: 'Kings Heath', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Five Ways Metro', type: 'Tram', routes: [
+          { name: 'Metro Line 1 - Wolverhampton', terminus: 'Wolverhampton City Centre', delay: 2, status: 'Minor Delays' },
+          { name: 'Metro Line 2 - Dudley', terminus: 'Dudley Town Centre', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Grand Central', type: 'Multi-Modal', routes: [
+          { name: 'Train - All Routes', terminus: 'UK Wide Network', delay: 0, status: 'Operating' },
+          { name: 'Metro - Lines 1 & 2', terminus: 'Wolverhampton & Dudley', delay: 2, status: 'Minor Delays' },
+          { name: 'Bus - Routes 1-20', terminus: 'Central Birmingham', delay: 0, status: 'Operating' }
+        ]}
       ],
       wolverhampton: [
-        { name: 'Wolverhampton Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London', 'Train - Manchester'] },
-        { name: 'Wolverhampton Bus Station', type: 'Bus', routes: ['Route 1 - City Centre', 'Route 10 - Westfield', 'Route 8 - Dudley'] },
-        { name: 'Wolverhampton Metro', type: 'Tram', routes: ['Metro Line 1 - Birmingham', 'Metro Line 2 - Dudley'] }
+        { name: 'Wolverhampton Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 0, status: 'Operating' },
+          { name: 'Train - Manchester', terminus: 'Manchester Piccadilly', delay: 12, status: 'Severe Delays' }
+        ]},
+        { name: 'Wolverhampton Bus Station', type: 'Bus', routes: [
+          { name: 'Route 1 - City Centre', terminus: 'Wolverhampton Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 10 - Westfield', terminus: 'Westfield Shopping Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 8 - Dudley', terminus: 'Dudley Bus Station', delay: 4, status: 'Minor Delays' }
+        ]},
+        { name: 'Wolverhampton Metro', type: 'Tram', routes: [
+          { name: 'Metro Line 1 - Birmingham', terminus: 'Birmingham City Centre', delay: 2, status: 'Minor Delays' },
+          { name: 'Metro Line 2 - Dudley', terminus: 'Dudley Bus Station', delay: 0, status: 'Operating' }
+        ]}
       ],
       coventry: [
-        { name: 'Coventry Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London', 'Train - Leicester'] },
-        { name: 'Coventry Coach Station', type: 'Bus', routes: ['Express 3 - London', 'Express 4 - Birmingham'] },
-        { name: 'Pool Meadow', type: 'Bus', routes: ['Route 7 - City Centre', 'Route 20 - Hospital', 'Route 15 - University'] }
+        { name: 'Coventry Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 3, status: 'Minor Delays' },
+          { name: 'Train - Leicester', terminus: 'Leicester Station', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Coventry Coach Station', type: 'Bus', routes: [
+          { name: 'Express 3 - London', terminus: 'London Victoria', delay: 0, status: 'Operating' },
+          { name: 'Express 4 - Birmingham', terminus: 'Birmingham Coach Station', delay: 6, status: 'Delays' }
+        ]},
+        { name: 'Pool Meadow', type: 'Bus', routes: [
+          { name: 'Route 7 - City Centre', terminus: 'Coventry Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 20 - Hospital', terminus: 'University Hospital', delay: 0, status: 'Operating' },
+          { name: 'Route 15 - University', terminus: 'Coventry University', delay: 0, status: 'Operating' }
+        ]}
       ],
       dudley: [
-        { name: 'Dudley Bus Station', type: 'Bus', routes: ['Route 8 - Town Centre', 'Route 16 - Kingswinford', 'Route 12 - Wolverhampton'] },
-        { name: 'Dudley Port Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+        { name: 'Dudley Bus Station', type: 'Bus', routes: [
+          { name: 'Route 8 - Town Centre', terminus: 'Dudley Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 16 - Kingswinford', terminus: 'Kingswinford', delay: 0, status: 'Operating' },
+          { name: 'Route 12 - Wolverhampton', terminus: 'Wolverhampton Bus Station', delay: 5, status: 'Delays' }
+        ]},
+        { name: 'Dudley Port Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
       ],
       sandwell: [
-        { name: 'West Bromwich Central', type: 'Bus', routes: ['Route 4 - West Bromwich', 'Route 11 - Oldbury', 'Route 9 - Dudley'] },
-        { name: 'Old Hill Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+        { name: 'West Bromwich Central', type: 'Bus', routes: [
+          { name: 'Route 4 - West Bromwich', terminus: 'West Bromwich Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 11 - Oldbury', terminus: 'Oldbury Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 9 - Dudley', terminus: 'Dudley Bus Station', delay: 4, status: 'Minor Delays' }
+        ]},
+        { name: 'Old Hill Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
       ],
       solihull: [
-        { name: 'Solihull Bus Station', type: 'Bus', routes: ['Route 14 - City Centre', 'Route 17 - Airport', 'Route 19 - NEC'] },
-        { name: 'Solihull Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - London'] }
+        { name: 'Solihull Bus Station', type: 'Bus', routes: [
+          { name: 'Route 14 - City Centre', terminus: 'Solihull Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 17 - Airport', terminus: 'Birmingham Airport', delay: 2, status: 'Minor Delays' },
+          { name: 'Route 19 - NEC', terminus: 'NEC Birmingham', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'Solihull Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - London', terminus: 'London Euston', delay: 0, status: 'Operating' }
+        ]}
       ],
       'west bromwich': [
-        { name: 'West Bromwich Bus Station', type: 'Bus', routes: ['Route 3 - Town Centre', 'Route 9 - Dudley', 'Route 6 - Sandwell'] },
-        { name: 'West Bromwich Railway', type: 'Train', routes: ['Train - Birmingham', 'Train - Wolverhampton'] }
+        { name: 'West Bromwich Bus Station', type: 'Bus', routes: [
+          { name: 'Route 3 - Town Centre', terminus: 'West Bromwich Town Centre', delay: 0, status: 'Operating' },
+          { name: 'Route 9 - Dudley', terminus: 'Dudley Bus Station', delay: 3, status: 'Minor Delays' },
+          { name: 'Route 6 - Sandwell', terminus: 'Sandwell Town Centre', delay: 0, status: 'Operating' }
+        ]},
+        { name: 'West Bromwich Railway', type: 'Train', routes: [
+          { name: 'Train - Birmingham', terminus: 'Birmingham New Street', delay: 0, status: 'Operating' },
+          { name: 'Train - Wolverhampton', terminus: 'Wolverhampton Station', delay: 0, status: 'Operating' }
+        ]}
       ]
     };
 
@@ -476,11 +581,16 @@
       routesContainer.innerHTML = '';
       
       station.routes.forEach(route => {
+        const statusClass = route.delay === 0 ? 'status-green' : route.delay <= 5 ? 'status-yellow' : 'status-red';
+        const delayText = route.delay === 0 ? 'No Delays' : `+${route.delay} min delay`;
+        
         const routeEl = document.createElement('div');
         routeEl.className = 'route-badge';
         routeEl.innerHTML = `
-          <div class="route-name">🚌 ${route}</div>
+          <div class="route-name">🚌 ${route.name}</div>
           <span class="route-type">${station.type}</span>
+          <div class="route-terminus"><strong>Terminates at:</strong> ${route.terminus}</div>
+          <div class="route-status ${statusClass}">${route.status} (${delayText})</div>
         `;
         routesContainer.appendChild(routeEl);
       });
