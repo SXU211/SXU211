@@ -275,6 +275,57 @@
       background-color: #f8d7da;
       color: #721c24;
     }
+
+    .flight-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f5f5ff;
+      border-radius: 8px;
+      border-left: 4px solid #1f4e79;
+    }
+
+    .flight-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .flight-table th,
+    .flight-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .flight-table th {
+      background-color: #e9efff;
+      color: #1f4e79;
+      font-weight: bold;
+    }
+
+    .flight-status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .flight-on-time {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .flight-delayed {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .flight-held {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
@@ -311,6 +362,16 @@
     <div class="stations-section" style="background-color: #fff5f5;">
       <div class="loading" id="motorwayLoading">Loading motorways...</div>
       <div class="stations-list" id="motorwayList"></div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Birmingham Airport Flights:</h3>
+    <div class="flight-section">
+      <div class="loading" id="flightLoading">Loading airport flights...</div>
+      <div id="flightSummary" style="margin-top: 10px; font-size: 14px; color: #333;"></div>
+      <h4 style="margin-top: 16px;">Departures</h4>
+      <table class="flight-table" id="departuresTable"></table>
+      <h4 style="margin-top: 18px;">Arrivals</h4>
+      <table class="flight-table" id="arrivalsTable"></table>
     </div>
 
     <div class="refresh-indicator">
@@ -582,6 +643,24 @@
       ]
     };
 
+    // Mock Birmingham Airport flight data
+    const airportData = {
+      departures: [
+        { time: '06:30', flight: 'BA123', destination: 'Amsterdam', status: 'On Time', delay: 0, gate: 'A12' },
+        { time: '07:15', flight: 'FR204', destination: 'Dublin', status: 'Delayed', delay: 25, gate: 'B3' },
+        { time: '08:00', flight: 'EY565', destination: 'Dubai', status: 'On Time', delay: 0, gate: 'C1' },
+        { time: '09:20', flight: 'KL321', destination: 'Amsterdam', status: 'Delayed', delay: 10, gate: 'A5' },
+        { time: '10:45', flight: 'U2451', destination: 'Milan', status: 'On Time', delay: 0, gate: 'B10' }
+      ],
+      arrivals: [
+        { time: '06:05', flight: 'BA112', origin: 'Amsterdam', status: 'On Time', delay: 0, terminal: 'Terminal 1' },
+        { time: '07:02', flight: 'FR213', origin: 'Dublin', status: 'Delayed', delay: 15, terminal: 'Terminal 1' },
+        { time: '08:10', flight: 'EY760', origin: 'Dubai', status: 'On Time', delay: 0, terminal: 'Terminal 1' },
+        { time: '09:00', flight: 'KL324', origin: 'Amsterdam', status: 'Delayed', delay: 20, terminal: 'Terminal 1' },
+        { time: '10:30', flight: 'U2480', origin: 'Milan', status: 'On Time', delay: 0, terminal: 'Terminal 1' }
+      ]
+    };
+
     // Update availability display
     function updateAvailability() {
       availabilityStatus.innerHTML = '';
@@ -655,6 +734,54 @@
         motorwayEl.addEventListener('click', () => displayRoutes(motorway.name, motorway.routes, 'motorway'));
         motorwayList.appendChild(motorwayEl);
       });
+    }
+
+    // Update Birmingham Airport flight display
+    function updateAirportFlights() {
+      const flightLoading = document.getElementById('flightLoading');
+      const flightSummary = document.getElementById('flightSummary');
+      const departuresTable = document.getElementById('departuresTable');
+      const arrivalsTable = document.getElementById('arrivalsTable');
+
+      flightLoading.style.display = 'none';
+      flightSummary.textContent = 'Birmingham Airport departures and arrivals for today.';
+      departuresTable.innerHTML = createFlightTableHeader('Departure', ['Time', 'Flight', 'To', 'Gate', 'Status']);
+      arrivalsTable.innerHTML = createFlightTableHeader('Arrival', ['Time', 'Flight', 'From', 'Terminal', 'Status']);
+
+      airportData.departures.forEach(flight => {
+        departuresTable.innerHTML += createFlightRow([
+          flight.time,
+          flight.flight,
+          flight.destination,
+          flight.gate,
+          createFlightStatus(flight.status, flight.delay)
+        ]);
+      });
+
+      airportData.arrivals.forEach(flight => {
+        arrivalsTable.innerHTML += createFlightRow([
+          flight.time,
+          flight.flight,
+          flight.origin,
+          flight.terminal,
+          createFlightStatus(flight.status, flight.delay)
+        ]);
+      });
+    }
+
+    function createFlightTableHeader(title, columns) {
+      const cells = columns.map(col => `<th>${col}</th>`).join('');
+      return `<tr><th colspan="${columns.length}" style="text-align:left; background:#dfe7ff;">${title}</th></tr><tr>${cells}</tr>`;
+    }
+
+    function createFlightRow(values) {
+      return `<tr>${values.map(val => `<td>${val}</td>`).join('')}</tr>`;
+    }
+
+    function createFlightStatus(status, delay) {
+      const statusClass = delay === 0 ? 'flight-on-time' : status === 'Delayed' ? 'flight-delayed' : 'flight-held';
+      const delayText = delay > 0 ? ` (+${delay} min)` : '';
+      return `<span class="flight-status ${statusClass}">${status}${delayText}</span>`;
     }
 
     // Create reusable item element (station or motorway)
@@ -742,6 +869,7 @@
       updateTimetable(location);
       updateStations(location);
       updateMotorways(location);
+      updateAirportFlights();
     }
 
     // Main search function
